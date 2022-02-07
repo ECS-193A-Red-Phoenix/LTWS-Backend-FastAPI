@@ -4,6 +4,6 @@ from fastapi import File
 
 
 class ModelInfo(BaseModel):
-    timestamp: datetime
-    model_output_binaries: bytes
+    timestamp: datetime =  None
+    binaries_file: bytes = File(...)
     

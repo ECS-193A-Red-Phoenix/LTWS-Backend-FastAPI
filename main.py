@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, File, UploadFile
 from WarningSystem import models, database, schemas
 from sqlalchemy.orm import Session
 
@@ -24,11 +24,10 @@ def homepage():
         "data" : "WELCOME TO THE LTWS HOMEPAGE"
     }
 
-
 @app.post("/input_to_db")
 def create(request: schemas.ModelInfo, db: Session = Depends(get_db)):
     print(f"Request Timestamp: {request.timestamp}")
-    newly_inputted_data = models.ModelDb(timestamp = request.timestamp, map_binary = request.model_output_binaries)
+    newly_inputted_data = models.ModelDb(timestamp = request.timestamp, map_binary = request.binaries_file)
     print("422 is thrown before this line 1")
     db.add(newly_inputted_data)
     print("422 is thrown before this line 2")
@@ -36,10 +35,15 @@ def create(request: schemas.ModelInfo, db: Session = Depends(get_db)):
     print("422 is thrown before this line 3")
     db.refresh(newly_inputted_data)
     print("422 is thrown before this line 4")
-    return newly_inputted_data
+    return {
+        "filename_received" : request.timestamp,
+    }
 
 
 # uvicorn main:app --reload
+
+# after post we will need to create a db clear functionality
+# -> sliding window technique to deleting data
 
 """
 if __name__ == "__main__":
