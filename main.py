@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, File, UploadFile
-from WarningSystem import models, database, schemas
+from WarningSystem import models, database
 from sqlalchemy.orm import Session
+import datetime
 
 
 app = FastAPI()
@@ -24,19 +25,17 @@ def homepage():
         "data" : "WELCOME TO THE LTWS HOMEPAGE"
     }
 
-@app.post("/input_to_db")
-def create(request: schemas.ModelInfo, db: Session = Depends(get_db)):
-    print(f"Request Timestamp: {request.timestamp}")
-    newly_inputted_data = models.ModelDb(timestamp = request.timestamp, map_binary = request.binaries_file)
-    print("422 is thrown before this line 1")
+
+@app.post("/input_to_db", tags  = ["files"])
+async def create(map_binary: UploadFile = File(...), db: Session = Depends(get_db)):
+    time = datetime.datetime.now(datetime.timezone.utc)
+    file2store = await map_binary.read()
+    newly_inputted_data = models.ModelDb(timestamp = time, map_binary = file2store)
     db.add(newly_inputted_data)
-    print("422 is thrown before this line 2")
     db.commit()
-    print("422 is thrown before this line 3")
     db.refresh(newly_inputted_data)
-    print("422 is thrown before this line 4")
     return {
-        "filename_received" : request.timestamp,
+        "filename" : map_binary.filename,
     }
 
 

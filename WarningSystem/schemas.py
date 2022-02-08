@@ -1,9 +1,11 @@
 from datetime import datetime
 from pydantic import BaseModel
-from fastapi import File
+from fastapi import File, UploadFile
 
 
 class ModelInfo(BaseModel):
     timestamp: datetime =  None
-    binaries_file: bytes = File(...)
-    
+    file_binaries: UploadFile = None
+
+
+# ignore this for now
