@@ -1,14 +1,21 @@
-from fastapi import FastAPI, Depends, File, UploadFile
+from fastapi import FastAPI, Depends, File, Response, UploadFile
 from WarningSystem import models, database
 from sqlalchemy.orm import Session
 import datetime
+from fastapi.responses import FileResponse
+
+
+
+#  for frontend endpoint testing
+from pathlib import Path
+base_url = f"{Path.cwd()}/communication_scripts/binaries/"
+test_images = [f"{base_url}/p2.png", f"{base_url}/picture1.png"]
+
 
 
 app = FastAPI()
 
-
 models.Base.metadata.create_all(database.engine)
-
 
 def get_db():
     db = database.SessionLocal()
@@ -27,22 +34,37 @@ def homepage():
 
 
 @app.post("/input_to_db", tags  = ["files"])
-async def create(map_binary: UploadFile = File(...), db: Session = Depends(get_db)):
-    time = datetime.datetime.now(datetime.timezone.utc)
-    file2store = await map_binary.read()
-    newly_inputted_data = models.ModelDb(timestamp = time, map_binary = file2store)
+async def create(file : bytes = File(default = None), db: Session = Depends(get_db)):
+    # f = open("plane_2", "wb+")
+    # f.write(file)
+    # f.close()
+    time = datetime.datetime.now(datetime.timezone.utc)   
+    newly_inputted_data = models.Visualizations(timestamp = time, map_binary = file)
     db.add(newly_inputted_data)
     db.commit()
     db.refresh(newly_inputted_data)
     return {
-        "filename" : map_binary.filename,
+        "filename" : "LOOKS GOOD"
     }
 
 
-# uvicorn main:app --reload
+@app.get("/frontend_get_image_test/{id}")
+async def frontend_get_image_test(id : int = 0): # request, db : Session  = Depends(get_db)):
+    return FileResponse(
+        test_images[id]
+    )
 
-# after post we will need to create a db clear functionality
-# -> sliding window technique to deleting data
+
+
+
+async def database_clear() -> int:
+    # after post we will need to create a db clear functionality
+    # -> sliding window technique to deleting data
+    pass
+
+
+
+# uvicorn main:app --reload
 
 """
 if __name__ == "__main__":
