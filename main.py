@@ -3,7 +3,7 @@ from WarningSystem import models, database
 from sqlalchemy.orm import Session
 import datetime
 from fastapi.responses import FileResponse
-
+from starlette.middleware.cors import CORSMiddleware
 
 
 #  for frontend endpoint testing
@@ -12,8 +12,22 @@ base_url = f"{Path.cwd()}/communication_scripts/binaries/"
 test_images = [f"{base_url}/p2.png", f"{base_url}/picture1.png"]
 
 
-
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = origins,
+    allow_credentials = True,
+    allow_methods = ["GET"],
+    allow_headers = [
+        "Content-Type",
+        "application/json"
+    ]
+)
 
 models.Base.metadata.create_all(database.engine)
 
