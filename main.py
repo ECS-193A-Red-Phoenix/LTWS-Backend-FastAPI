@@ -46,19 +46,17 @@ def homepage():
         "data" : "WELCOME TO THE LTWS HOMEPAGE"
     }
 
-
+# Receives a binary file and saves it to disk
 @app.post("/input_to_db", tags  = ["files"])
-async def create(file : bytes = File(default = None), db: Session = Depends(get_db)):
-    # f = open("plane_2", "wb+")
-    # f.write(file)
-    # f.close()
-    time = datetime.datetime.now(datetime.timezone.utc)   
-    newly_inputted_data = models.Visualizations(timestamp = time, map_binary = file)
-    db.add(newly_inputted_data)
-    db.commit()
-    db.refresh(newly_inputted_data)
+async def create(f: UploadFile):
+    # Copy file contents to new file with same name on disk
+    file_contents = f.file.read()
+    local_file = open(f.filename, "wb")
+    local_file.write(file_contents)
+    local_file.close()
+
     return {
-        "filename" : "LOOKS GOOD"
+        "filename" : f.filename
     }
 
 
