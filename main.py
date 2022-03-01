@@ -46,7 +46,7 @@ def homepage():
         "data" : "WELCOME TO THE LTWS HOMEPAGE"
     }
 
-# Receives a binary file and saves it to disk
+# Receives a file and saves it to disk
 @app.post("/input_to_db", tags  = ["files"])
 async def create(f: UploadFile):
     # Copy file contents to new file with same name on disk
