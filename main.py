@@ -1,12 +1,19 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from WarningSystem import models, database, schemas
 from sqlalchemy.orm import Session
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
 
 
 models.Base.metadata.create_all(database.engine)
+
+
+templates = Jinja2Templates(directory = "build")
+app.mount("/static", StaticFiles(directory = "build/static"), name = "static")
 
 
 def get_db():
@@ -17,25 +24,18 @@ def get_db():
         db.close()
 
 
-@app.get("/")
-def homepage():
-    print("IN HOMEPAGE!")
-    return {
-        "data" : "WELCOME TO THE LTWS HOMEPAGE"
-    }
+@app.get("/", response_class = HTMLResponse)
+async def homepage(request : Request):
+    return templates.TemplateResponse("index.html", { "request" : request} )
 
 
 @app.post("/input_to_db")
-def create(request: schemas.ModelInfo, db: Session = Depends(get_db)):
+async def create(request: schemas.ModelInfo, db: Session = Depends(get_db)):
     print(f"Request Timestamp: {request.timestamp}")
     newly_inputted_data = models.ModelDb(timestamp = request.timestamp, map_binary = request.model_output_binaries)
-    print("422 is thrown before this line 1")
     db.add(newly_inputted_data)
-    print("422 is thrown before this line 2")
     db.commit()
-    print("422 is thrown before this line 3")
     db.refresh(newly_inputted_data)
-    print("422 is thrown before this line 4")
     return newly_inputted_data
 
 
