@@ -23,7 +23,8 @@ models.Base.metadata.create_all(database.engine)
 
 
 templates = Jinja2Templates(directory = "build")
-app.mount("/build", StaticFiles(directory = "build/static"), name = "static")
+#app.mount("/build", StaticFiles(directory = "build/static"), name = "static")
+app.mount("/", StaticFiles(directory = "./build", html = True), name = "static")
 
 
 def get_db():
